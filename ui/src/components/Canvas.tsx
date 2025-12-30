@@ -7,9 +7,15 @@ interface CanvasProp {
     strokes: StrokeData[] | ((prev: StrokeData[]) => StrokeData[])
   ) => void;
   activeColor: string;
+  onStrokeComplete: (stroke: StrokeData) => void;
 }
 
-const Canvas = ({ strokes, setStrokes, activeColor }: CanvasProp) => {
+const Canvas = ({
+  strokes,
+  setStrokes,
+  activeColor,
+  onStrokeComplete,
+}: CanvasProp) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastPoint = useRef({ x: 0, y: 0 });
 
@@ -31,17 +37,15 @@ const Canvas = ({ strokes, setStrokes, activeColor }: CanvasProp) => {
 
     // Store to strokes
     setStrokes((prev: StrokeData[]) => {
-      const updated = [
-        ...prev,
-        {
-          id: Date.now(),
-          color: activeColor,
-          width: 1,
-          points: currentStrokes,
-        },
-      ];
+      const currentStroke = {
+        id: Date.now(),
+        color: activeColor,
+        width: 1,
+        points: currentStrokes,
+      };
+      const updated = [...prev, currentStroke];
 
-      // debouncedSave(updated);
+      onStrokeComplete(currentStroke);
       return updated;
     });
     setCurrentStrokes([]);
